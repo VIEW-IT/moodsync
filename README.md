@@ -29,27 +29,6 @@ Custom deep links
  . Falls back to moodsync://dashboard
 . Calm pastel UI with consistent branding and design system
 
-🗂 Project Structure
-moodsync/
-├── ios/                # SwiftUI app
-│   ├── MoodSyncApp.swift
-│   ├── ContentView.swift
-│   ├── Assets/
-│   └── ...
-│
-├── web/                # Web app
-│   ├── index.html
-│   ├── dashboard.html
-│   ├── journal.html
-│   ├── js/
-│   ├── css/
-│   └── ...
-│
-│
-├── README.md
-├── LICENSE
-└── .gitignore
-
 📸 Demo Preview
 🎬 Watch the walkthrough: https://youtu.be/Uqr7f90kNlY
 
