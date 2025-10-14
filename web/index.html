@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – Journal & Mood Tracker</title>
+  <link rel="stylesheet" href="/css/theme.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <!-- Header -->
+  <!--#include file="shared-header.html"-->
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="badge">New</span>
+        <h1>Track your mood. Know your patterns.</h1>
+        <p>MoodSync helps you journal quickly and see trends over time.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn" href="/dashboard.html">View Dashboard</a>
+          <a class="btn secondary" href="/new-entry.html">New Reflection</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px">Weekly Snapshot</h3>
+        <canvas id="homeChart" height="200"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="color:var(--muted);display:flex;gap:16px">
+      <a href="#" style="color:inherit;text-decoration:none">About</a>
+      <a href="#" style="color:inherit;text-decoration:none">Privacy</a>
+      <a href="#" style="color:inherit;text-decoration:none">Terms</a>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/charts.js"></script>
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderWeeklyChart('homeChart', MS.listEntries());
+    });
+  </script>
+  <!-- 1) Chart.js library (from CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- 2) Your app scripts (pure JS files) -->
+<script src="/js/storage.js"></script>
+<script src="/js/deepLinks.js"></script>
+<script src="/js/charts.js"></script>
+
+<!-- 3) Page-specific init (if needed) -->
+<script>
+  // Example for index.html
+  document.addEventListener('DOMContentLoaded', () => {
+    renderWeeklyChart('homeChart', MS.listEntries());
+  });
+</script>
+<script src="/js/notify.js"></script>
+
+</body>
+</html>

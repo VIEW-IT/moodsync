@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – Dashboard</title>
+  <link rel="stylesheet" href="/css/theme.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container grid grid-2">
+    <section class="card">
+      <h2 style="margin:0 0 8px">This Week</h2>
+      <canvas id="dashChart" height="240"></canvas>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 8px">Quick Stats</h2>
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
+        <div class="card" style="padding:12px">
+          <div style="color:var(--muted);font-size:12px">Streak</div>
+          <div id="streak" style="font-weight:800;font-size:28px">0</div>
+          <div style="color:var(--muted);font-size:12px">days in a row</div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div style="color:var(--muted);font-size:12px">Avg Mood (7d)</div>
+          <div id="avg" style="font-weight:800;font-size:28px">–</div>
+          <div id="avgLabel" style="color:var(--muted);font-size:12px"></div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div style="color:var(--muted);font-size:12px">Good 😊</div>
+          <div id="good" style="font-weight:800;font-size:28px">0</div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div style="color:var(--muted);font-size:12px">Meh 😐</div>
+          <div id="meh" style="font-weight:800;font-size:28px">0</div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div style="color:var(--muted);font-size:12px">Bad ☁️</div>
+          <div id="bad" style="font-weight:800;font-size:28px">0</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="container" style="color:var(--muted)">© MoodSync</div></footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script src="/js/charts.js"></script>
+  <script>
+    // --- helpers reused from charts.js ---
+    const scoreToLabel = (v) => v >= 2.67 ? "😊 Good" : v >= 1.67 ? "😐 Meh" : "☁️ Bad";
+    function moodScore(m){ return m === 'bad' ? 1 : (m === 'meh' ? 2 : 3); }
+    function last7() {
+      const out = []; const d = new Date();
+      for (let i = 0; i < 7; i++) { const t = new Date(d); t.setDate(d.getDate() - i); out.unshift(t.toISOString().slice(0,10)); }
+      return out;
+    }
+
+    // Streak: consecutive days with at least one entry, counting today backwards
+    function calcStreak(entries){
+      const byDate = new Set(entries.map(e => e.date));
+      let c = 0;
+      const d = new Date();
+      while (true) {
+        const iso = new Date(d.getFullYear(), d.getMonth(), d.getDate()-c).toISOString().slice(0,10);
+        if (byDate.has(iso)) c++; else break;
+      }
+      return c;
+    }
+
+    // Counts + average over last 7 days
+    function weeklyStats(entries){
+      const labels = last7();
+      const inWeek = entries.filter(e => labels.includes(e.date));
+      const counts = { good:0, meh:0, bad:0 };
+      let total = 0, n = 0;
+      for (const e of inWeek){
+        counts[e.mood]++; total += moodScore(e.mood); n++;
+      }
+      const avg = n ? (total / n) : null;
+      return { counts, avg };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const entries = MS.listEntries();
+
+      // Chart
+      renderWeeklyChart('dashChart', entries);
+
+      // Streak
+      const s = calcStreak(entries);
+      document.getElementById('streak').textContent = s;
+
+      // Counts + average (7d)
+      const { counts, avg } = weeklyStats(entries);
+      document.getElementById('good').textContent = counts.good;
+      document.getElementById('meh').textContent = counts.meh;
+      document.getElementById('bad').textContent = counts.bad;
+
+      const avgEl = document.getElementById('avg');
+      const avgLbl = document.getElementById('avgLabel');
+      if (avg === null) { avgEl.textContent = '–'; avgLbl.textContent = 'No data'; }
+      else {
+        avgEl.textContent = (Math.round(avg * 100) / 100).toFixed(2);
+        avgLbl.textContent = scoreToLabel(avg);
+      }
+    });
+  </script>
+  <script src="/js/notify.js"></script>
+
+</body>
+</html>

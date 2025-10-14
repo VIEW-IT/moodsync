@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – Public Journal</title>
+  <link rel="stylesheet" href="/css/theme.css"/><link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="header-row" style="margin-bottom:12px">
+      <h2 id="title" style="margin:0">Journal</h2>
+    </div>
+    <div class="card" id="list"></div>
+  </main>
+
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script>
+    function getParam(name){
+      const url = new URL(location.href);
+      return url.searchParams.get(name);
+    }
+    function render(){
+      const username = getParam('u') || 'guest';
+      document.getElementById('title').textContent = `${username}'s Journal`;
+      // In a real app this would fetch the user's public entries from a server.
+      // For demo purposes we just read the current browser's local data.
+      const entries = MS.listEntries(username);
+      const listEl = document.getElementById('list');
+      if (!entries.length){ listEl.innerHTML='<div class="empty">No public entries.</div>'; return; }
+      listEl.innerHTML = entries.map(e=>`
+        <div class="entry">
+          <div class="mood">${e.mood==='good'?'😊':e.mood==='meh'?'😐':'☁️'}</div>
+          <div><div><b>${e.date}</b></div><div>${(e.note||'').replace(/</g,'&lt;')}</div></div>
+        </div>
+      `).join('');
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+  <!-- 1) Chart.js library (from CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- 2) Your app scripts (pure JS files) -->
+<script src="/js/storage.js"></script>
+<script src="/js/deepLinks.js"></script>
+<script src="/js/charts.js"></script>
+
+<!-- 3) Page-specific init (if needed) -->
+<script>
+  // Example for index.html
+  document.addEventListener('DOMContentLoaded', () => {
+    renderWeeklyChart('homeChart', MS.listEntries());
+  });
+</script>
+<script src="/js/notify.js"></script>
+
+</body>
+</html>

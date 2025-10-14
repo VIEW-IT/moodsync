@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – Journal</title>
+  <link rel="stylesheet" href="/css/theme.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="header-row" style="margin-bottom:12px">
+      <h2 style="margin:0">Your Entries</h2>
+      <a class="btn" href="/new-entry.html">New Reflection</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr; gap:12px">
+        <div>
+          <label>Search text</label>
+          <input id="q" placeholder="keyword in note..." />
+        </div>
+        <div>
+          <label>Mood</label>
+          <select id="mood">
+            <option value="">All</option>
+            <option value="good">Good 😊</option>
+            <option value="meh">Meh 😐</option>
+            <option value="bad">Bad ☁️</option>
+          </select>
+        </div>
+        <div>
+          <label>Date</label>
+          <input id="date" type="date" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="list"></div>
+  </main>
+
+  <footer>
+    <div class="container" style="color:var(--muted)">© MoodSync</div>
+  </footer>
+
+  <!-- Scripts (no Chart.js needed on Journal page) -->
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script>
+    const moodEmoji = (m) => m==='good' ? '😊' : m==='meh' ? '😐' : '☁️';
+
+    function applyFilters(entries){
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const mood = document.getElementById('mood').value;
+      const date = document.getElementById('date').value; // yyyy-mm-dd
+
+      return entries.filter(e => {
+        if (mood && e.mood !== mood) return false;
+        if (date && e.date !== date) return false;
+        if (q && !(e.note || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+
+    function editEntry(id){
+      location.href = '/new-entry.html?id=' + encodeURIComponent(id);
+    }
+    function removeEntry(id){
+      if (!confirm('Delete this entry?')) return;
+      MS.deleteEntry(id);
+      renderList();
+    }
+
+    function renderList(){
+      const el = document.getElementById('list');
+      const all = MS.listEntries();
+      const entries = applyFilters(all);
+
+      if (!entries.length){
+        el.innerHTML = `<div class="empty">No matching entries.</div>`;
+        return;
+      }
+      el.innerHTML = entries.map(e => `
+        <div class="entry" style="justify-content:space-between">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div class="mood">${moodEmoji(e.mood)}</div>
+            <div>
+              <div><b>${e.date}</b></div>
+              <div>${(e.note || '').replace(/</g,'&lt;')}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn secondary" onclick="editEntry('${e.id}')">Edit</button>
+            <button class="btn" style="background:#ef4444" onclick="removeEntry('${e.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Wire filters
+    ['q','mood','date'].forEach(id => {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById(id).addEventListener('input', renderList);
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', renderList);
+  </script>
+  <script src="/js/notify.js"></script>
+</body>
+</html>

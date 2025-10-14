@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – Profile</title>
+  <link rel="stylesheet" href="/css/theme.css"/><link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2 style="margin-top:0">Profile</h2>
+      <form onsubmit="saveProfile(event)" class="grid" style="gap:12px">
+        <div>
+          <label>Username</label>
+          <input id="username" placeholder="e.g., mia"/>
+        </div>
+        <div>
+          <label>Display Name</label>
+          <input id="displayName" placeholder="Your name"/>
+        </div>
+        <button class="btn" type="submit">Save</button>
+      </form>
+
+      <div style="margin-top:14px">
+        <a id="publicLink" class="btn secondary" href="#">View My Journal Online</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const u = MS.getUser() || {username:'guest', displayName:'Guest'};
+      document.getElementById('username').value = u.username;
+      document.getElementById('displayName').value = u.displayName || '';
+      updatePublicLink();
+    });
+    function saveProfile(e){
+      e.preventDefault();
+      const user = {
+        username: document.getElementById('username').value.trim() || 'guest',
+        displayName: document.getElementById('displayName').value.trim()
+      };
+      MS.saveUser(user); updatePublicLink(); alert('Saved!');
+    }
+    function updatePublicLink(){
+      const u = MS.getUser() || {username:'guest'};
+      const url = userPublicUrl(u.username);
+      const a = document.getElementById('publicLink');
+      a.href = url; a.target = "_blank";
+    }
+  </script>
+  <!-- 1) Chart.js library (from CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- 2) Your app scripts (pure JS files) -->
+<script src="/js/storage.js"></script>
+<script src="/js/deepLinks.js"></script>
+<script src="/js/charts.js"></script>
+
+<!-- 3) Page-specific init (if needed) -->
+<script>
+  // Example for index.html
+  document.addEventListener('DOMContentLoaded', () => {
+    renderWeeklyChart('homeChart', MS.listEntries());
+  });
+</script>
+<script src="/js/notify.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MoodSync – New Entry</title>
+  <link rel="stylesheet" href="/css/theme.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a href="/" class="nav-brand" style="font-weight:800;text-decoration:none;color:inherit">MoodSync</a>
+      <nav class="nav">
+        <a data-path="/" href="/">Home</a>
+        <a data-path="/dashboard.html" href="/dashboard.html">Dashboard</a>
+        <a data-path="/journal.html" href="/journal.html">Journal</a>
+        <a data-path="/profile.html" href="/profile.html">Profile</a>
+        <a href="#" class="btn" onclick="openInApp()">Open in App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2 id="formTitle" style="margin-top:0">New Reflection</h2>
+      <form id="f" class="grid" onsubmit="save(event)">
+        <div class="grid" style="gap:6px">
+          <label for="date">Date</label>
+          <input id="date" name="date" type="date" required/>
+        </div>
+        <div class="grid" style="gap:6px">
+          <label for="mood">Mood</label>
+          <select id="mood" name="mood" required>
+            <option value="good">😊 Good</option>
+            <option value="meh">😐 Meh</option>
+            <option value="bad">☁️ Bad</option>
+          </select>
+        </div>
+        <div class="grid" style="gap:6px">
+          <label for="note">Reflection</label>
+          <textarea id="note" name="note" rows="5" placeholder="How are you feeling today?"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" type="submit" id="saveBtn">Save</button>
+          <a class="btn secondary" href="/journal.html">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Scripts (no Chart.js on this page) -->
+  <script src="/js/storage.js"></script>
+  <script src="/js/deepLinks.js"></script>
+  <script>
+    // Helpers
+    function getParam(name){
+      const url = new URL(location.href);
+      return url.searchParams.get(name);
+    }
+
+    let editingId = null;
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const id = getParam('id');
+      const titleEl = document.getElementById('formTitle');
+      const saveBtn = document.getElementById('saveBtn');
+
+      if (id){
+        // Edit mode
+        editingId = id;
+        const e = MS.getEntryById(id);
+        if (e){
+          document.getElementById('date').value = e.date;
+          document.getElementById('mood').value = e.mood;
+          document.getElementById('note').value = e.note || '';
+          titleEl.textContent = 'Edit Entry';
+          saveBtn.textContent = 'Update';
+        } else {
+          // If not found, default to new
+          document.getElementById('date').value = MS.todayISO();
+        }
+      } else {
+        // New mode
+        document.getElementById('date').value = MS.todayISO();
+      }
+    });
+
+    function save(e){
+      e.preventDefault();
+      const entry = {
+        id: editingId || MS.uid(),
+        date: document.getElementById('date').value,
+        mood: document.getElementById('mood').value,
+        note: document.getElementById('note').value.trim()
+      };
+      if (editingId){
+        MS.updateEntry(entry);
+      } else {
+        MS.addEntry(entry);
+      }
+      location.href = '/journal.html';
+    }
+  </script>
+</body>
+</html>
